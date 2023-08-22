@@ -31,13 +31,14 @@ def flip_image(image, view, horizontal_flip):
     If training mode, makes all images face right direction.
     In medical, keeps the original directions unless horizontal_flip is set.
     """
-    if horizontal_flip == 'NO':
-        if VIEWS.is_right(view):
-            image = np.fliplr(image)
-    elif horizontal_flip == 'YES':
-        if VIEWS.is_left(view):
-            image = np.fliplr(image)
-
+    if (
+        horizontal_flip == 'NO'
+        and VIEWS.is_right(view)
+        or horizontal_flip != 'NO'
+        and horizontal_flip == 'YES'
+        and VIEWS.is_left(view)
+    ):
+        image = np.fliplr(image)
     return image
 
 
@@ -71,8 +72,7 @@ def load_heatmaps(benign_heatmap_path, malignant_heatmap_path, view, horizontal_
     assert bool(benign_heatmap_path) == bool(malignant_heatmap_path)
     benign_heatmap = load_image(benign_heatmap_path, view, horizontal_flip)
     malignant_heatmap = load_image(malignant_heatmap_path, view, horizontal_flip)
-    heatmaps = np.stack([benign_heatmap, malignant_heatmap], axis=2)
-    return heatmaps
+    return np.stack([benign_heatmap, malignant_heatmap], axis=2)
 
 
 def load_image_and_heatmaps(image_path, benign_heatmap_path, malignant_heatmap_path, view, horizontal_flip):

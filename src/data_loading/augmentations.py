@@ -196,9 +196,12 @@ def sample_crop_best_center(image, input_size, random_number_generator, max_crop
     borders = borders + crop_noise
 
     # this is to make sure that the cropping window isn't outside of the image
-    assert (borders[0] >= 0) and (borders[1] <= image.shape[0]) and (borders[2] >= 0) and (borders[3] <= image.shape[
-        1]), "Centre of the crop area is sampled such that the borders are outside of the image. Borders: " + str(
-        borders) + ', image shape: ' + str(image.shape)
+    assert (
+        (borders[0] >= 0)
+        and (borders[1] <= image.shape[0])
+        and (borders[2] >= 0)
+        and (borders[3] <= image.shape[1])
+    ), f"Centre of the crop area is sampled such that the borders are outside of the image. Borders: {str(borders)}, image shape: {str(image.shape)}"
 
     # return the padded image and cropping window information
     return image, borders
@@ -220,12 +223,9 @@ def sample_crop(image, input_size, borders, random_number_generator, max_crop_si
     if input_size[0] >= input_size[1]:
         max_crop_size_vertical_noise = max_crop_size_noise
         max_crop_size_horizontal_noise = np.round(max_crop_size_noise * (input_size[1] / input_size[0]))
-    elif input_size[0] < input_size[1]:
+    else:
         max_crop_size_vertical_noise = np.round(max_crop_size_noise * (input_size[0] / input_size[1]))
         max_crop_size_horizontal_noise = max_crop_size_noise
-    else:
-        raise RuntimeError()
-
     max_crop_size_noise = np.array((max_crop_size_vertical_noise, max_crop_size_vertical_noise,
                                     max_crop_size_horizontal_noise, max_crop_size_horizontal_noise),
                                    dtype=np.int32)
@@ -234,15 +234,22 @@ def sample_crop(image, input_size, borders, random_number_generator, max_crop_si
     borders = borders + size_noise
 
     # this is to make sure that the cropping window isn't outside of the image
-    assert (borders[0] >= 0) and (borders[1] <= image.shape[0]) and (borders[2] >= 0) and (borders[3] <= image.shape[
-        1]), "Center of the crop area is sampled such that the borders are outside of the image. Borders: " + str(
-        borders) + ', image shape: ' + str(image.shape)
+    assert (
+        (borders[0] >= 0)
+        and (borders[1] <= image.shape[0])
+        and (borders[2] >= 0)
+        and (borders[3] <= image.shape[1])
+    ), f"Center of the crop area is sampled such that the borders are outside of the image. Borders: {str(borders)}, image shape: {str(image.shape)}"
 
     # Sanity check. make sure that the top is above the bottom
-    assert borders[1] > borders[0], "Bottom above the top. Top: " + str(borders[0]) + ', bottom: ' + str(borders[1])
+    assert (
+        borders[1] > borders[0]
+    ), f"Bottom above the top. Top: {str(borders[0])}, bottom: {str(borders[1])}"
 
     # Sanity check. make sure that the left is left to the right
-    assert borders[3] > borders[2], "Left on the right. Left: " + str(borders[2]) + ', right: ' + str(borders[3])
+    assert (
+        borders[3] > borders[2]
+    ), f"Left on the right. Left: {str(borders[2])}, right: {str(borders[3])}"
 
     return borders
 

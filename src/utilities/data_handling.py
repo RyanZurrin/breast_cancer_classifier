@@ -31,7 +31,7 @@ def unpack_exam_into_images(exam_list, cropped=False):
     Turn exam_list into image_list for parallel functions which process each image separately.
     """
     image_list = []
-    for i, exam in enumerate(exam_list):
+    for exam in exam_list:
         for view in VIEWS.LIST:
             for j, image in enumerate(exam[view]):
                 image_dict = dict(
@@ -56,8 +56,8 @@ def add_metadata(exam_list, additional_metadata_name, additional_metadata_dict):
     """
     for exam in exam_list:
         assert additional_metadata_name not in exam, "this metadata is already included"
-        exam[additional_metadata_name] = dict()
+        exam[additional_metadata_name] = {}
         for view in VIEWS.LIST:
             exam[additional_metadata_name][view] = []
-            for j, image in enumerate(exam[view]):
+            for image in exam[view]:
                 exam[additional_metadata_name][view].append(additional_metadata_dict[image])

@@ -173,14 +173,12 @@ def save_heatmaps(heatmap_malignant, heatmap_benign, short_file_path, view, hori
     heatmap_malignant = loading.flip_image(heatmap_malignant, view, horizontal_flip)
     heatmap_benign = loading.flip_image(heatmap_benign, view, horizontal_flip)
     heatmap_save_path_malignant = os.path.join(
-        parameters['save_heatmap_path'][0], 
-        short_file_path + '.hdf5'
+        parameters['save_heatmap_path'][0], f'{short_file_path}.hdf5'
     )
     saving_images.save_image_as_hdf5(heatmap_malignant, heatmap_save_path_malignant)
 
     heatmap_save_path_benign = os.path.join(
-        parameters['save_heatmap_path'][1],
-        short_file_path + '.hdf5'
+        parameters['save_heatmap_path'][1], f'{short_file_path}.hdf5'
     )
     saving_images.save_image_as_hdf5(heatmap_benign, heatmap_save_path_benign)
 
@@ -308,7 +306,7 @@ def load_model(parameters):
     Load trained patch classifier
     """
     if (parameters["device_type"] == "gpu") and torch.has_cudnn:
-        device = torch.device("cuda:{}".format(parameters["gpu_number"]))
+        device = torch.device(f'cuda:{parameters["gpu_number"]}')
     else:
         device = torch.device("cpu")
 

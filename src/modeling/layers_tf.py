@@ -125,8 +125,7 @@ def gaussian_noise_layer(inputs, std, training):
     with tf.variable_scope("gaussian_noise_layer"):
         if training:
             noise = tf.random_normal(tf.shape(inputs), mean=0.0, stddev=std, dtype=tf.float32)
-            output = tf.add_n([inputs, noise])
-            return output
+            return tf.add_n([inputs, noise])
         else:
             return tf.identity(inputs)
 

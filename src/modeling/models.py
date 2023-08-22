@@ -137,15 +137,19 @@ class SingleImageBreastModel(nn.Module):
         view_angle = view.lower().split("-")[-1]
         view_key = view.lower().replace("-", "")
         self.view_resnet.load_state_dict(
-            filter_strip_prefix(state_dict, "four_view_resnet.{}.".format(view_angle))
+            filter_strip_prefix(state_dict, f"four_view_resnet.{view_angle}.")
         )
-        self.fc1.load_state_dict(
-            filter_strip_prefix(state_dict, "fc1_{}.".format(view_key))
+        self.fc1.load_state_dict(filter_strip_prefix(state_dict, f"fc1_{view_key}."))
+        self.output_layer.load_state_dict(
+            {
+                "fc_layer.weight": state_dict[
+                    f"output_layer_{view_key}.fc_layer.weight"
+                ][:4],
+                "fc_layer.bias": state_dict[
+                    f"output_layer_{view_key}.fc_layer.bias"
+                ][:4],
+            }
         )
-        self.output_layer.load_state_dict({
-            "fc_layer.weight": state_dict["output_layer_{}.fc_layer.weight".format(view_key)][:4],
-            "fc_layer.bias": state_dict["output_layer_{}.fc_layer.bias".format(view_key)][:4],
-        })
 
 
 class FourViewResNet(nn.Module):
@@ -161,11 +165,7 @@ class FourViewResNet(nn.Module):
         self.model_dict[VIEWS.R_MLO] = self.r_mlo = self.mlo
 
     def forward(self, x):
-        h_dict = {
-            view: self.single_forward(x[view], view)
-            for view in VIEWS.LIST
-        }
-        return h_dict
+        return {view: self.single_forward(x[view], view) for view in VIEWS.LIST}
 
     def single_forward(self, single_x, view):
         return self.model_dict[view](single_x)
@@ -199,8 +199,8 @@ class ViewResNetV2(nn.Module):
         self.layer_list = nn.ModuleList()
         current_num_filters = num_filters
         self.inplanes = num_filters
-        for i, (num_blocks, stride) in enumerate(zip(
-                blocks_per_layer_list, block_strides_list)):
+        for num_blocks, stride in zip(
+                blocks_per_layer_list, block_strides_list):
             self.layer_list.append(self._make_layer(
                 block=block_fn,
                 planes=current_num_filters,
@@ -220,7 +220,7 @@ class ViewResNetV2(nn.Module):
     def forward(self, x):
         h = self.first_conv(x)
         h = self.first_pool(h)
-        for i, layer in enumerate(self.layer_list):
+        for layer in self.layer_list:
             h = layer(h)
         h = self.final_bn(h)
         h = self.relu(h)
@@ -236,9 +236,7 @@ class ViewResNetV2(nn.Module):
             block(self.inplanes, planes, stride, downsample)
         ]
         self.inplanes = planes * block.expansion
-        for i in range(1, blocks):
-            layers_.append(block(self.inplanes, planes))
-
+        layers_.extend(block(self.inplanes, planes) for _ in range(1, blocks))
         return nn.Sequential(*layers_)
 
 

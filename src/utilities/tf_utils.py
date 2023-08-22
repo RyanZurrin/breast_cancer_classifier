@@ -27,19 +27,16 @@ import tensorflow as tf
 
 def get_tf_variables(graph, batch_norm_key="bn"):
     param_variables = graph.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-    bn_running_variables = []
-    for variable in graph.get_collection(tf.GraphKeys.GLOBAL_VARIABLES):
-        if batch_norm_key in variable.name \
-                and "moving" in variable.name:
-            bn_running_variables.append(variable)
+    bn_running_variables = [
+        variable
+        for variable in graph.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+        if batch_norm_key in variable.name and "moving" in variable.name
+    ]
     return param_variables + bn_running_variables
 
 
 def construct_weight_assign_ops(match_dict):
-    assign_list = []
-    for tf_var, np_weights in match_dict.items():
-        assign_list.append(tf_var.assign(np_weights))
-    return assign_list
+    return [tf_var.assign(np_weights) for tf_var, np_weights in match_dict.items()]
 
 
 def convert_conv_torch2tf(w):

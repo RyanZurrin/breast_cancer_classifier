@@ -60,7 +60,7 @@ def construct_densenet_match_dict(tf_variables, torch_weights, tf_torch_weights_
 def load_model_tf(parameters):
     # Setup model params
     if (parameters["device_type"] == "gpu") and tf.test.is_gpu_available():
-        device_str = "/device:GPU:{}".format(parameters["gpu_number"])
+        device_str = f'/device:GPU:{parameters["gpu_number"]}'
     else:
         device_str = "/cpu:0"
 
@@ -106,8 +106,7 @@ def prediction_by_batch_tf(minibatch_patches, sess, x, y, parameters):
         -1, parameters['patch_size'], parameters['patch_size'], parameters['input_channels']
     )
 
-    output = sess.run(y, feed_dict={x: minibatch_x})
-    return output
+    return sess.run(y, feed_dict={x: minibatch_x})
 
 
 def get_all_prob_tf(all_patches, minibatch_size, sess, x, y, parameters):

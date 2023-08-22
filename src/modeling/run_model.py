@@ -51,7 +51,7 @@ def load_model(parameters):
     model.load_state_dict(torch.load(parameters["model_path"])["model"])
 
     if (parameters["device_type"] == "gpu") and torch.has_cudnn:
-        device = torch.device("cuda:{}".format(parameters["gpu_number"]))
+        device = torch.device(f'cuda:{parameters["gpu_number"]}')
     else:
         device = torch.device("cpu")
     model = model.to(device)
