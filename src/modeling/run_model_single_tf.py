@@ -50,7 +50,7 @@ def load_model(parameters):
     # Setup model params
     input_channels = 3 if parameters["use_heatmaps"] else 1
     if (parameters["device_type"] == "gpu") and tf.test.is_gpu_available():
-        device_str = "/device:GPU:{}".format(parameters["gpu_number"])
+        device_str = f'/device:GPU:{parameters["gpu_number"]}'
     else:
         device_str = "/cpu:0"
     view_str = parameters["view"].replace("-", "_").lower()
@@ -159,13 +159,14 @@ def run(parameters):
 
     all_predictions = []
     for data_batch in tools.partition_batch(range(parameters["num_epochs"]), parameters["batch_size"]):
-        batch = []
-        for _ in data_batch:
-            batch.append(process_augment_inputs(
+        batch = [
+            process_augment_inputs(
                 model_input=model_input,
                 random_number_generator=random_number_generator,
                 parameters=parameters,
-            ))
+            )
+            for _ in data_batch
+        ]
         x_data = batch_to_inputs(batch)
         with sess.as_default():
             y_hat = sess.run(y, feed_dict={x: x_data})

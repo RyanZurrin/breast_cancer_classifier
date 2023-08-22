@@ -52,7 +52,7 @@ def load_model(parameters):
         view=parameters["view"],
     )
     if (parameters["device_type"] == "gpu") and torch.has_cudnn:
-        device = torch.device("cuda:{}".format(parameters["gpu_number"]))
+        device = torch.device(f'cuda:{parameters["gpu_number"]}')
     else:
         device = torch.device("cpu")
     model = model.to(device)
@@ -137,13 +137,14 @@ def run(parameters):
 
     all_predictions = []
     for data_batch in tools.partition_batch(range(parameters["num_epochs"]), parameters["batch_size"]):
-        batch = []
-        for _ in data_batch:
-            batch.append(process_augment_inputs(
+        batch = [
+            process_augment_inputs(
                 model_input=model_input,
                 random_number_generator=random_number_generator,
                 parameters=parameters,
-            ))
+            )
+            for _ in data_batch
+        ]
         tensor_batch = batch_to_tensor(batch, device)
         with torch.no_grad():
             y_hat = model(tensor_batch)

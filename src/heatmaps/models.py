@@ -50,7 +50,7 @@ class ModifiedDenseNet121(nn.Module):
                 module_name_parts = full_name.split(".")
                 parent = self._get_module(self.densenet, module_name_parts[:-1])
                 actual_module_name = module_name_parts[-1]
-                assert "conv" in module_name_parts[-1] or "pool" in module_name_parts[-1]
+                assert "conv" in actual_module_name or "pool" in actual_module_name
                 setattr(parent, actual_module_name, TFSamePadWrapper(nn_module))
         self._is_modified = True
 

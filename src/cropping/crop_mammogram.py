@@ -57,8 +57,7 @@ def get_mask_of_largest_connected_component(img_mask):
     """
     mask, mask_pixels_dict = get_masks_and_sizes_of_connected_components(img_mask)
     largest_mask_index = pd.Series(mask_pixels_dict).idxmax()
-    largest_mask = mask == largest_mask_index
-    return largest_mask
+    return mask == largest_mask_index
 
 
 def get_edge_values(img, largest_mask, axis):
@@ -87,10 +86,7 @@ def get_distance_from_starting_side(img, mode, x_edge_left, x_edge_right):
     on the side where the breast starts to appear in the image, 
     we record this information.
     """
-    if mode == "left":
-        return img.shape[1] - x_edge_right
-    else:
-        return x_edge_left
+    return img.shape[1] - x_edge_right if mode == "left" else x_edge_left
 
 
 def include_buffer_y_axis(img, y_edge_top, y_edge_bottom, buffer_size):
@@ -111,9 +107,8 @@ def include_buffer_x_axis(img, mode, x_edge_left, x_edge_right, buffer_size):
     if mode == "left":
         if x_edge_left > 0:
             x_edge_left -= min(x_edge_left, buffer_size)
-    else:
-        if x_edge_right < img.shape[1]:
-            x_edge_right += min(img.shape[1] - x_edge_right, buffer_size)
+    elif x_edge_right < img.shape[1]:
+        x_edge_right += min(img.shape[1] - x_edge_right, buffer_size)
     return x_edge_left, x_edge_right
 
 
@@ -237,16 +232,15 @@ def image_orientation(horizontal_flip, side):
     """
     assert horizontal_flip in ['YES', 'NO'], "Wrong horizontal flip"
     assert side in ['L', 'R'], "Wrong side"
-    if horizontal_flip == 'YES':
-        if side == 'R':
-            return 'right'
-        else:
-            return 'left'
+    if (
+        horizontal_flip == 'YES'
+        and side == 'R'
+        or horizontal_flip != 'YES'
+        and side != 'R'
+    ):
+        return 'right'
     else:
-        if side == 'R':
-            return 'left'
-        else:
-            return 'right'
+        return 'left'
 
 
 def crop_mammogram(input_data_folder, exam_list_path, cropped_exam_list_path, output_data_folder,
@@ -312,7 +306,11 @@ def crop_mammogram_one_image(scan, input_file_path, output_file_path, num_iterat
             1/3
         )
     except Exception as error:
-        print(input_file_path, "\n\tFailed to crop image because image is invalid.", str(error))
+        print(
+            input_file_path,
+            "\n\tFailed to crop image because image is invalid.",
+            error,
+        )
     else:
         
         top, bottom, left, right = cropping_info[0]
@@ -320,11 +318,11 @@ def crop_mammogram_one_image(scan, input_file_path, output_file_path, num_iterat
         target_parent_dir = os.path.split(output_file_path)[0]
         if not os.path.exists(target_parent_dir):
             os.makedirs(target_parent_dir)
-        
+
         try:
             saving_images.save_image_as_png(image[top:bottom, left:right], output_file_path)
         except Exception as error:
-            print(input_file_path, "\n\tError while saving image.", str(error))
+            print(input_file_path, "\n\tError while saving image.", error)
 
         return cropping_info
 

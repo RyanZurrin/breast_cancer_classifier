@@ -61,7 +61,7 @@ def construct_single_image_breast_model_match_dict(
         torch_weights = torch.load(torch_weights)["model"]
     torch_weights = {k: w.numpy() for k, w in torch_weights.items()}
     match_dict = {}
-    torch_resnet_prefix = "four_view_resnet.{}.".format(view_str)
+    torch_resnet_prefix = f"four_view_resnet.{view_str}."
     tf_var_dict = {var.name: var for var in tf_variables}
     for tf_var_name, tf_var in tf_var_dict.items():
         if "resnet" not in tf_var.name:
@@ -73,15 +73,24 @@ def construct_single_image_breast_model_match_dict(
         assert tf_var.shape == weight.shape
         match_dict[tf_var] = weight
     short_view_str = view_str.replace("_", "")
-    match_dict[tf_var_dict["model/fc1/dense/kernel:0"]] = \
-        tf_utils.convert_fc_weight_torch2tf(torch_weights["fc1_{}.weight".format(short_view_str)])
-    match_dict[tf_var_dict["model/fc1/dense/bias:0"]] = \
-        torch_weights["fc1_{}.bias".format(short_view_str)]
-    match_dict[tf_var_dict["model/output_layer/dense/kernel:0"]] = \
-        tf_utils.convert_fc_weight_torch2tf(
-            torch_weights["output_layer_{}.fc_layer.weight".format(short_view_str)])[:, :4]
-    match_dict[tf_var_dict["model/output_layer/dense/bias:0"]] = \
-        torch_weights["output_layer_{}.fc_layer.bias".format(short_view_str)][:4]
+    match_dict[
+        tf_var_dict["model/fc1/dense/kernel:0"]
+    ] = tf_utils.convert_fc_weight_torch2tf(
+        torch_weights[f"fc1_{short_view_str}.weight"]
+    )
+    match_dict[tf_var_dict["model/fc1/dense/bias:0"]] = torch_weights[
+        f"fc1_{short_view_str}.bias"
+    ]
+    match_dict[
+        tf_var_dict["model/output_layer/dense/kernel:0"]
+    ] = tf_utils.convert_fc_weight_torch2tf(
+        torch_weights[f"output_layer_{short_view_str}.fc_layer.weight"]
+    )[
+        :, :4
+    ]
+    match_dict[tf_var_dict["model/output_layer/dense/bias:0"]] = torch_weights[
+        f"output_layer_{short_view_str}.fc_layer.bias"
+    ][:4]
     assert len(match_dict) == len(tf_variables)
     return match_dict
 
@@ -89,7 +98,7 @@ def construct_single_image_breast_model_match_dict(
 def four_view_resnet(inputs, training):
     result_dict = {}
     for view in VIEWS.LIST:
-        with tf.variable_scope("view_{}".format(view)):
+        with tf.variable_scope(f"view_{view}"):
             result_dict[view] = resnet22(inputs, training)
     return result_dict
 
@@ -135,7 +144,7 @@ def view_resnet_v2(inputs, training, num_filters,
         current_num_filters = num_filters
         for i, (num_blocks, stride) in enumerate(zip(
                 blocks_per_layer_list, block_strides_list)):
-            with tf.variable_scope("major_{}".format(i + 1)):
+            with tf.variable_scope(f"major_{i + 1}"):
                 h = make_layer(
                     inputs=h,
                     planes=current_num_filters,
@@ -166,7 +175,7 @@ def make_layer(inputs, planes, training, blocks, stride=1):
             downsample=True,
         )
     for i in range(1, blocks):
-        with tf.variable_scope("block_{}".format(i)):
+        with tf.variable_scope(f"block_{i}"):
             h = layers.basic_block_v2(
                 inputs=h,
                 planes=planes,

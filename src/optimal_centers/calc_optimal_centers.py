@@ -36,14 +36,18 @@ def get_images_optimal_window_info(image, com, window_dim_ls, step=1,
     optimal windows
     """
 
-    image_result_ls = []
     cumsum = get_image_cumsum(image)
-    for window_dim in window_dim_ls:
-        image_result_ls.append(get_image_optimal_window_info(
-            image, com, window_dim,
-            step=step, tl_br_constraint=tl_br_constraint, cumsum=cumsum,
-        ))
-
+    image_result_ls = [
+        get_image_optimal_window_info(
+            image,
+            com,
+            window_dim,
+            step=step,
+            tl_br_constraint=tl_br_constraint,
+            cumsum=cumsum,
+        )
+        for window_dim in window_dim_ls
+    ]
     return pd.DataFrame(image_result_ls)
 
 

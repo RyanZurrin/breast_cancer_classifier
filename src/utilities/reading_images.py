@@ -29,8 +29,7 @@ import h5py
 
 
 def read_image_png(file_name):
-    image = np.array(imageio.imread(file_name))
-    return image
+    return np.array(imageio.imread(file_name))
 
 
 def read_image_mat(file_name):
